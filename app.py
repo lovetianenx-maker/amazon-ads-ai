@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import plotly.express as px
 from analyzer import full_analysis
 from ai_report import generate_ai_report
 
@@ -194,8 +194,115 @@ elif menu == "🏠 数据看板":
 
 
         st.divider()
+        # =====================
+        # 数据可视化
+        # =====================
 
 
+        st.subheader(
+            "📊 广告数据可视化"
+        )
+
+
+        chart_data = pd.DataFrame({
+
+            "指标":[
+                "广告花费",
+                "广告销售额"
+            ],
+
+
+            "金额":[
+
+                data["spend"],
+
+                data["sales"]
+
+            ]
+
+        })
+
+
+        fig = px.bar(
+
+            chart_data,
+
+            x="指标",
+
+            y="金额",
+
+            title="广告投入与销售"
+
+        )
+
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+        st.subheader(
+            "💚 广告健康评分"
+        )
+
+
+        score = 100
+
+
+
+        if data["acos"] > 0.5:
+
+            score -= 30
+
+
+        if data["cpc"] > 1:
+
+            score -= 15
+
+
+
+        if len(waste) > 5:
+
+            score -= 20
+
+
+
+        score=max(
+            score,
+            0
+        )
+
+
+
+        if score >=80:
+
+            level="优秀"
+
+
+        elif score>=60:
+
+            level="正常"
+
+
+        else:
+
+            level="需要优化"
+
+
+
+        st.metric(
+
+            "广告健康分",
+
+            f"{score}/100"
+
+        )
+
+
+        st.info(
+
+            f"当前等级：{level}"
+
+        )
         st.subheader(
             "🚨 智能优化提醒"
         )
