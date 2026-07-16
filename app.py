@@ -6,47 +6,46 @@ from ai_report import generate_ai_report
 
 
 st.set_page_config(
-    page_title="Amazon Ads Intelligence System",
+    page_title="Amazon Ads智能分析系统",
     page_icon="📊",
     layout="wide"
 )
 
 
-# =====================
-# 页面标题
-# =====================
+# =========================
+# 标题
+# =========================
 
 st.title(
     "📊 Amazon Ads Intelligence System"
 )
 
 st.caption(
-    "AI-powered Amazon PPC Analysis Platform"
+    "亚马逊广告智能分析与优化系统"
 )
 
 
-# =====================
-# 左侧菜单
-# =====================
+# =========================
+# 菜单
+# =========================
 
 menu = st.sidebar.selectbox(
 
-    "Navigation",
+    "功能导航",
 
     [
-        "🏠 Dashboard",
-        "📤 Upload Data",
-        "🔍 Keyword Analysis",
-        "📢 Campaign Analysis",
-        "🤖 AI Report"
+        "🏠 数据看板",
+        "📤 上传广告数据",
+        "🔍 关键词分析",
+        "📢 广告活动分析",
+        "🤖 AI优化报告"
     ]
 
 )
 
 
-# =====================
-# Session保存数据
-# =====================
+
+# 保存分析结果
 
 if "analysis" not in st.session_state:
 
@@ -54,21 +53,40 @@ if "analysis" not in st.session_state:
 
 
 
-# =====================
+# =========================
 # 上传页面
-# =====================
+# =========================
 
-if menu == "📤 Upload Data":
+if menu == "📤 上传广告数据":
 
 
     st.header(
-        "📤 Upload Amazon Ads Report"
+        "📤 上传Amazon广告报表"
     )
+
+
+    st.info(
+        """
+支持：
+
+- Sponsored Products
+- Sponsored Brands
+- Sponsored Display
+
+格式：
+
+Excel (.xlsx)
+CSV
+
+建议上传最近30天数据
+"""
+    )
+
 
 
     file = st.file_uploader(
 
-        "Upload Excel / CSV",
+        "选择广告报表",
 
         type=[
             "xlsx",
@@ -76,6 +94,7 @@ if menu == "📤 Upload Data":
         ]
 
     )
+
 
 
     if file:
@@ -92,12 +111,23 @@ if menu == "📤 Upload Data":
 
 
         st.success(
-            "File uploaded successfully"
+            "广告数据上传成功"
         )
 
 
+        st.write(
+            "数据预览："
+        )
+
+
+        st.dataframe(
+            df.head(10)
+        )
+
+
+
         if st.button(
-            "🚀 Start Analysis"
+            "🚀 开始智能分析"
         ):
 
 
@@ -108,27 +138,30 @@ if menu == "📤 Upload Data":
 
 
             st.success(
-                "Analysis completed!"
+                "分析完成，请查看各模块"
             )
 
 
 
-# =====================
+# =========================
 # Dashboard
-# =====================
+# =========================
 
-elif menu == "🏠 Dashboard":
+elif menu == "🏠 数据看板":
 
 
     st.header(
-        "Today's Advertising Performance"
+        "📈 今日广告表现"
     )
 
 
     if st.session_state.analysis:
 
 
-        basic = st.session_state.analysis["basic"]
+        data = (
+            st.session_state.analysis
+            ["basic"]
+        )
 
 
         c1,c2,c3,c4 = st.columns(4)
@@ -136,58 +169,49 @@ elif menu == "🏠 Dashboard":
 
 
         c1.metric(
-
-            "Spend",
-
-            f"€{basic['spend']:.2f}"
-
+            "广告花费",
+            f"€{data['spend']:.2f}"
         )
 
 
         c2.metric(
-
-            "Sales",
-
-            f"€{basic['sales']:.2f}"
-
+            "广告销售额",
+            f"€{data['sales']:.2f}"
         )
 
 
         c3.metric(
-
             "ACOS",
-
-            f"{basic['acos']:.2%}"
-
+            f"{data['acos']:.2%}"
         )
 
 
         c4.metric(
-
             "ROAS",
-
-            f"{basic['roas']:.2f}"
-
+            f"{data['roas']:.2f}"
         )
+
 
 
         st.divider()
 
 
-
         st.subheader(
-            "🚨 Smart Alerts"
+            "🚨 智能优化提醒"
         )
+
 
 
         waste = (
+
             st.session_state.analysis
             ["keywords"]
             ["waste"]
+
         )
 
 
-        if len(waste)>0:
+        if waste:
 
 
             st.warning(
@@ -195,40 +219,46 @@ elif menu == "🏠 Dashboard":
                 f"""
 发现 {len(waste)} 个浪费关键词。
 
+
 建议：
-降低Bid或添加Negative Keyword。
+
+降低竞价 Bid
+
+添加否定关键词
+
+检查搜索词匹配
+
+
 """
 
             )
 
         else:
 
-            st.success(
-                "暂无明显浪费关键词"
-            )
 
+            st.success(
+                "暂无明显广告浪费"
+            )
 
 
     else:
 
 
         st.info(
-
             "请先上传广告数据"
-
         )
 
 
 
-# =====================
-# Keyword页面
-# =====================
+# =========================
+# Keyword
+# =========================
 
-elif menu == "🔍 Keyword Analysis":
+elif menu == "🔍 关键词分析":
 
 
     st.header(
-        "Keyword Performance"
+        "🔍 广告关键词分析"
     )
 
 
@@ -236,13 +266,15 @@ elif menu == "🔍 Keyword Analysis":
 
 
         keywords = (
+
             st.session_state.analysis
             ["keywords"]
+
         )
 
 
         st.subheader(
-            "🔴 Waste Keywords"
+            "🔴 浪费关键词"
         )
 
 
@@ -257,7 +289,7 @@ elif menu == "🔍 Keyword Analysis":
 
 
         st.subheader(
-            "🟢 Winner Keywords"
+            "🟢 优质关键词"
         )
 
 
@@ -270,32 +302,51 @@ elif menu == "🔍 Keyword Analysis":
         )
 
 
+
+        st.subheader(
+            "🟡 潜力关键词"
+        )
+
+
+        st.dataframe(
+
+            pd.DataFrame(
+                keywords["potential"]
+            )
+
+        )
+
+
     else:
 
+
         st.info(
-            "请先上传数据"
+            "请先上传广告数据"
         )
 
 
 
-# =====================
-# Campaign页面
-# =====================
+# =========================
+# Campaign
+# =========================
 
-elif menu == "📢 Campaign Analysis":
+elif menu == "📢 广告活动分析":
 
 
     st.header(
-        "Campaign Performance"
+        "📢 Campaign广告活动分析"
     )
+
 
 
     if st.session_state.analysis:
 
 
         campaigns = (
+
             st.session_state.analysis
             ["campaigns"]
+
         )
 
 
@@ -307,23 +358,25 @@ elif menu == "📢 Campaign Analysis":
 
         )
 
+
     else:
 
+
         st.info(
-            "请先上传数据"
+            "请先上传广告数据"
         )
 
 
 
-# =====================
+# =========================
 # AI报告
-# =====================
+# =========================
 
-elif menu == "🤖 AI Report":
+elif menu == "🤖 AI优化报告":
 
 
     st.header(
-        "AI Advertising Report"
+        "🤖 AI广告优化日报"
     )
 
 
@@ -344,6 +397,7 @@ elif menu == "🤖 AI Report":
 
     else:
 
+
         st.info(
-            "请先上传数据"
+            "请先上传广告数据"
         )
