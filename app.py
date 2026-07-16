@@ -12,108 +12,338 @@ st.set_page_config(
 )
 
 
-st.title("📊 Amazon Ads Intelligence System")
+# =====================
+# 页面标题
+# =====================
 
-st.write(
-    "上传 Amazon 广告报表，AI自动分析广告表现并生成优化建议"
+st.title(
+    "📊 Amazon Ads Intelligence System"
+)
+
+st.caption(
+    "AI-powered Amazon PPC Analysis Platform"
 )
 
 
-file = st.file_uploader(
-    "上传 Amazon Ads Excel/CSV 文件",
-    type=["xlsx","csv"]
+# =====================
+# 左侧菜单
+# =====================
+
+menu = st.sidebar.selectbox(
+
+    "Navigation",
+
+    [
+        "🏠 Dashboard",
+        "📤 Upload Data",
+        "🔍 Keyword Analysis",
+        "📢 Campaign Analysis",
+        "🤖 AI Report"
+    ]
+
 )
 
 
+# =====================
+# Session保存数据
+# =====================
 
-if file:
+if "analysis" not in st.session_state:
 
-
-    if file.name.endswith(".xlsx"):
-
-        df = pd.read_excel(file)
-
-    else:
-
-        df = pd.read_csv(file)
+    st.session_state.analysis = None
 
 
 
-    st.success("文件上传成功")
+# =====================
+# 上传页面
+# =====================
+
+if menu == "📤 Upload Data":
 
 
-    st.subheader("数据预览")
-
-    st.dataframe(
-        df.head(10)
+    st.header(
+        "📤 Upload Amazon Ads Report"
     )
 
 
-    if st.button(
-        "🚀 开始AI分析"
-    ):
+    file = st.file_uploader(
+
+        "Upload Excel / CSV",
+
+        type=[
+            "xlsx",
+            "csv"
+        ]
+
+    )
 
 
-        with st.spinner(
-            "正在分析广告数据..."
+    if file:
+
+
+        if file.name.endswith(".xlsx"):
+
+            df = pd.read_excel(file)
+
+        else:
+
+            df = pd.read_csv(file)
+
+
+
+        st.success(
+            "File uploaded successfully"
+        )
+
+
+        if st.button(
+            "🚀 Start Analysis"
         ):
 
 
             result = full_analysis(df)
 
 
-            report = generate_ai_report(
-                result
+            st.session_state.analysis = result
+
+
+            st.success(
+                "Analysis completed!"
             )
 
 
-        st.divider()
+
+# =====================
+# Dashboard
+# =====================
+
+elif menu == "🏠 Dashboard":
 
 
-        st.header(
-            "📈 广告核心指标"
-        )
+    st.header(
+        "Today's Advertising Performance"
+    )
 
 
-        basic=result["basic"]
+    if st.session_state.analysis:
 
 
-        c1,c2,c3,c4=st.columns(4)
+        basic = st.session_state.analysis["basic"]
+
+
+        c1,c2,c3,c4 = st.columns(4)
+
 
 
         c1.metric(
+
             "Spend",
+
             f"€{basic['spend']:.2f}"
+
         )
 
 
         c2.metric(
+
             "Sales",
+
             f"€{basic['sales']:.2f}"
+
         )
 
 
         c3.metric(
+
             "ACOS",
+
             f"{basic['acos']:.2%}"
+
         )
 
 
         c4.metric(
-            "ROAS",
-            f"{basic['roas']:.2f}"
-        )
 
+            "ROAS",
+
+            f"{basic['roas']:.2f}"
+
+        )
 
 
         st.divider()
 
 
-        st.header(
-            "🤖 AI优化报告"
+
+        st.subheader(
+            "🚨 Smart Alerts"
+        )
+
+
+        waste = (
+            st.session_state.analysis
+            ["keywords"]
+            ["waste"]
+        )
+
+
+        if len(waste)>0:
+
+
+            st.warning(
+
+                f"""
+发现 {len(waste)} 个浪费关键词。
+
+建议：
+降低Bid或添加Negative Keyword。
+"""
+
+            )
+
+        else:
+
+            st.success(
+                "暂无明显浪费关键词"
+            )
+
+
+
+    else:
+
+
+        st.info(
+
+            "请先上传广告数据"
+
+        )
+
+
+
+# =====================
+# Keyword页面
+# =====================
+
+elif menu == "🔍 Keyword Analysis":
+
+
+    st.header(
+        "Keyword Performance"
+    )
+
+
+    if st.session_state.analysis:
+
+
+        keywords = (
+            st.session_state.analysis
+            ["keywords"]
+        )
+
+
+        st.subheader(
+            "🔴 Waste Keywords"
+        )
+
+
+        st.dataframe(
+
+            pd.DataFrame(
+                keywords["waste"]
+            )
+
+        )
+
+
+
+        st.subheader(
+            "🟢 Winner Keywords"
+        )
+
+
+        st.dataframe(
+
+            pd.DataFrame(
+                keywords["winner"]
+            )
+
+        )
+
+
+    else:
+
+        st.info(
+            "请先上传数据"
+        )
+
+
+
+# =====================
+# Campaign页面
+# =====================
+
+elif menu == "📢 Campaign Analysis":
+
+
+    st.header(
+        "Campaign Performance"
+    )
+
+
+    if st.session_state.analysis:
+
+
+        campaigns = (
+            st.session_state.analysis
+            ["campaigns"]
+        )
+
+
+        st.dataframe(
+
+            pd.DataFrame(
+                campaigns
+            )
+
+        )
+
+    else:
+
+        st.info(
+            "请先上传数据"
+        )
+
+
+
+# =====================
+# AI报告
+# =====================
+
+elif menu == "🤖 AI Report":
+
+
+    st.header(
+        "AI Advertising Report"
+    )
+
+
+    if st.session_state.analysis:
+
+
+        report = generate_ai_report(
+
+            st.session_state.analysis
+
         )
 
 
         st.markdown(
             report
+        )
+
+
+    else:
+
+        st.info(
+            "请先上传数据"
         )
